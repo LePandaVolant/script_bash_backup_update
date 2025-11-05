@@ -9,7 +9,7 @@ fi
 CONFIG="./config.cfg"
 source "$CONFIG"
 BAD_FILES="${FILES_TO_IGNORE[@]}"
-echo "$BAD_FILES"
+
 if [ -n "$1" ]; then
 	BACKUP_DIR="$1"
 else
@@ -53,7 +53,11 @@ do
 done
 
 sudo tar -czpvf $BACKUP_DIR/$NAME ${ARRAY[@]} 2>/tmp/backup_tar_err.log  > /tmp/backup_tar.log
-echo -e "\nListe des logs archivés :\n${ARRAY[@]}"
+echo -e "\nListe des logs archivés :\n"
+for log in ${ARRAY[@]};
+do
+	echo "- $log"
+done
 echo -e "\nTaille de l'archive (o) :"
 gzip -l $BACKUP_DIR/$NAME | awk 'NR > 1 {print$1}'
 echo -e "\nRatio de compréssion :"
