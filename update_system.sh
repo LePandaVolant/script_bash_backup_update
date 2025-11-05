@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DATE=$(date '+%Y-%m-%d %H:%M:%S')
-OUTPUT=$(sudo apt update > /tmp/update.log 2> /tmp/update_error.log)
+OUTPUT=$(sudo apt update -y > /tmp/update.log 2> /tmp/update_error.log)
 RETURN_CODE=$(echo $?)
 
 > /tmp/update_tmp.log
@@ -15,6 +15,7 @@ grep "ERROR" /tmp/update_error.log | tee -a "$ERROR_TMP"
 
 if [ $RETURN_CODE != 0 ]; then
 	echo "Erreur dans la commande apt update" | tee -a "$ERROR_TMP"
+	exit 1
 fi
 
 OUTPUT=$(sudo apt upgrade -y >> /tmp/update.log 2>> /tmp/update_error.log)
@@ -27,6 +28,7 @@ grep "ERROR" /tmp/update_error.log| tee -a "$ERROR_TMP"
 
 if [ $RETURN_CODE != 0 ]; then
 	echo "Erreur dans la commande apt upgrade" | tee -a "$ERROR_TMP"
+	exit 1
 fi
 
 OUTPUT=$(sudo apt autoremove -y  >> /tmp/update.log 2>> /tmp/update_error.log)
@@ -39,6 +41,7 @@ grep "ERROR" /tmp/update_error.log| tee -a "$ERROR_TMP"
 
 if [ $RETURN_CODE != 0 ]; then
 	echo "Erreur dans la commande apt autoremove" | tee -a "$ERROR_TMP"
+	exit 1
 fi
 
 sudo sed "s/^/$DATE /" "/tmp/update.log" > "/tmp/update.log.tmp" && mv "/tmp/update.log.tmp" "/tmp/update.log"

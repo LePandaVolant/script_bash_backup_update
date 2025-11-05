@@ -4,6 +4,7 @@ if [ ! -f "./config.cfg" ]; then
 	echo "Pas de fichier config.cfg"
 	echo "Création d'un fichier config.cfg"
 	echo "BACKUP_DEFAULT_DIR=/backup/logs" > "./config.cfg"
+	echo "FILE_TO_IGNORE=('gzip' 'symbolic' 'XZ')" >> "./config.cfg"
 fi
 
 CONFIG="./config.cfg"
