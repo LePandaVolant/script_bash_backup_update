@@ -1,39 +1,66 @@
 #!/bin/bash
 
+if [ ! -f "./config.cfg" ]; then
+	echo "Pas de fichier config.cfg"
+	echo "Création d'un fichier config.cfg"
+	echo "BACKUP_DEFAULT_DIR=/backup/logs" > "./config.cfg"
+fi
+
+CONFIG="./config.cfg"
+source "$CONFIG"
+BAD_FILES="${FILES_TO_IGNORE[@]}"
+echo "$BAD_FILES"
+if [ -n "$1" ]; then
+	BACKUP_DIR="$1"
+else
+	BACKUP_DIR="$BACKUP_DEFAULT_DIR"
+fi
+
+BACKUP_DIR=${BACKUP_DIR%/}
+echo "$BACKUP_DIR"
+
 DATE=$(date +%Y%m%d)
 NAME="logs_$DATE.tar.gz"
-FREE_SPACE=$(df -h |grep -oP "/dev/sda.*G" | grep -oP "[\d]*G$"|grep -oP "[\d]*")
+FREE_SPACE=$(df -BM |grep -oP "/dev/sda.*M" | grep -oP "[\d]*M$"|grep -oP "[\d]*")
 ARRAY=()
-if [ $FREE_SPACE -lt 1 ]; then
+
+if [ $FREE_SPACE -lt 1000 ]; then
 	echo "Espace disque insuffisant"
 	exit 1
 fi
 
-sudo mkdir -p /backup/logs/
+sudo mkdir -p "$BACKUP_DIR"
 
 for f in $(find /var/log/ -type f -exec printf '%s\n' '{}' +);
 do
 	echo "$f"
 	FILE_TYPE=$(file $f | awk '{print$2}')
 	echo "$FILE_TYPE"
-	if [ $FILE_TYPE = "gzip" ]; then
-		echo "mauvais type de fichier"
-	elif [ $FILE_TYPE = "symbolic" ]; then
-		echo "mauvais type de fichier"
-	else
+	IGNORE_FILE=0
+
+	for type in $BAD_FILES;
+	do
+		if [ $FILE_TYPE = $type ]; then
+			echo "mauvais type de fichier"
+			IGNORE_FILE=1
+			break
+		fi
+	done
+	if [ $IGNORE_FILE = 0 ]; then
 		ARRAY+=("$f")
 		echo "fichier ajouté"
 	fi
 done
 
-sudo tar -czpvf /backup/logs/$NAME ${ARRAY[@]}
+sudo tar -czpvf $BACKUP_DIR/$NAME ${ARRAY[@]} 2>/tmp/backup_tar_err.log  > /tmp/backup_tar.log
 echo -e "\nListe des logs archivés :\n${ARRAY[@]}"
 echo -e "\nTaille de l'archive (o) :"
-gzip -l /backup/logs/$NAME | awk 'NR > 1 {print$1}'
+gzip -l $BACKUP_DIR/$NAME | awk 'NR > 1 {print$1}'
 echo -e "\nRatio de compréssion :"
-gzip -l /backup/logs/$NAME | awk 'NR > 1 {print$3}'
+gzip -l $BACKUP_DIR/$NAME | awk 'NR > 1 {print$3}'
 
-find /backup/logs/* -mtime 7 -delete
+echo -e "\nEmplacement des backups : $BACKUP_DIR"
+find $BACKUP_DIR/* -mtime 7 -delete
 DELETE_CODE=$(echo "$?")
 if [ $DELETE_CODE != 0 ]; then
 	echo "Erreur lors de la suppression des anciens logs"
