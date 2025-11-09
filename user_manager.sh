@@ -66,7 +66,10 @@ while test $# -gt 0; do
 	shift
 done
 if [ -z "$OPERATION" ]; then 
-	echo "Veuillez saisir une opération"
+	echo "Veuillez saisir une opération parmi les arguments suivants:"
+	echo "-a | --add : Pour ajouter un utilisateur"
+	echo "-d | --del : Pour supprimer un utilisateur"
+	echo "-l | --list : Pour lister les utilisateurs"
 	exit 1
 fi
 
