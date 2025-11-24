@@ -13,3 +13,10 @@ Le fichier "config.cfg" est modifiable à condition de respecter la mise en form
 
 Pour exécuter les scripts il est conseillé d'utiliser "sudo" ou d'être l'utilisateur "root"
 
+Utilisation 
+- update.system.sh    :    Met à jours les paquets du système et retourne les erreurs
+- backup_logs.sh      :    Fait une backup des logs présent dans /var/logs
+- network_diag.sh     :    Analyse réseau
+- admin_auto.sh       :    Permet l'execution des autres scripts
+- config.cfg          :    Dossier de configuration des scripts
+- user_manager.sh     :    Permet une gestion de la création et suppression des utilisateurs
